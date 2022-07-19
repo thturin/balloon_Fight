@@ -50,5 +50,16 @@ def update_high_scores():
 def display_high_scores():
     pass
 
+def on_mouse_down(): #when the player clicks on the mouse
+    global up
+    up = True
+    balloon.y -= 50
+
+def on_mouse_up(): #when the player lets go of the mouse
+    global up
+    up = False
+    balloon.y += 50
+
+def flap():
 
 pgzrun.go()
