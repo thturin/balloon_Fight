@@ -1,4 +1,4 @@
-import pgzrun, random
+import pgzrun, random, pygame
 
 """
 Project No. Balloon Fight 
@@ -13,6 +13,8 @@ by write to the file only if the high scores have changed hint use a boolean
 
 use a list of bird actors 
 
+add a heart image that represents the lives 
+
 """
 
 #CONSTANTS
@@ -26,19 +28,17 @@ game_over = False
 score = 0
 num_of_updates = 0
 scores = []
-update_high_scores = False
+update_highscores = False
 birds = []
+lives_counter = 5
+
 
 balloon = Actor("balloon")
 balloon.pos = 400,300
 
-
-for index in range(4):
+for index in range(3):
     birds.append(Actor('bird-up'))
     birds[index].pos = random.randint(0,800), random.randint(10,200) #bird appears
-
-
-
 
 house = Actor('house')
 house.pos= 390, 460
@@ -46,12 +46,19 @@ house.pos= 390, 460
 tree = Actor('tree')
 tree.pos = 700,450 #makes tree appear somehwere on the grass background
 
+lives= Actor('heart5') #actors have all the same attributes as rect so
+lives.pos = 930, 70
+lives._surf = pygame.transform.scale(lives._surf, (200,30))
+lives._update_pos()
+
+
 def draw():
     screen.blit("background",(0,0))
-
     if not game_over:
         balloon.draw()
-        for bird in birds: bird.draw()
+        for bird in birds:
+            bird.draw()
+        lives.draw()
         tree.draw()
         house.draw()
         screen.draw.text("Score: {}".format(score),(700,500),color="black")
@@ -59,7 +66,7 @@ def draw():
         display_high_scores()
 
 def update_high_scores():
-    global score, scores, update_high_scores
+    global score, scores, update_highscores
     filename = r'C:\Users\Tatiana\PycharmProjects\balloon_Fight\venv\high-scores.txt'
     scores = []
     with open(filename, 'r') as file:
@@ -70,17 +77,16 @@ def update_high_scores():
         if score > int(num):
             scores.append(str(score)+" ")
             score = int(num)
-            update_high_scores = True
+            update_highscores = True
         else:
             scores.append(str(num)+ " ")
-    if update_high_scores:
+    if update_highscores:
         with open(filename, "w") as file:
             for num in scores:
                 file.write(num)
-        update_high_scores = False
+        update_highscores = False
     file.close()
-    print("High Scores: {}".format(scores))
-
+   # print("High Scores: {}".format(scores))
 
 def display_high_scores():
     screen.draw.text("HIGH SCORES:",(350,150),color='black')
@@ -90,7 +96,6 @@ def display_high_scores():
         screen.draw.text('{}. {}'.format(position,num), (305,y),color = "black")
         y+=20
         position +=1
-
 
 def on_mouse_down(): #when the player clicks on the mouse
     global up
@@ -111,10 +116,9 @@ def flap(bird):
         bird.image = 'bird-up'
         bird_up = True
 
-
-
 def update():
-    global game_over, score, num_of_updates, birds
+    global game_over, score, num_of_updates, birds, lives_counter, flag
+
 
     if not game_over: #if the game is not over yet
         if not up: #if up is false
@@ -133,9 +137,11 @@ def update():
                 bird.y=random.randint(0,HEIGHT)
                 score+=1 #this means the balloon avoided getting hit by the bird which adds a point
                 num_of_updates = 0
+
             if balloon.collidepoint(bird.x,bird.y) or balloon.collidepoint(house.x,house.y) or balloon.collidepoint(tree.x,tree.y):
-                game_over = True
-                update_high_scores()
+                lives_counter-=1
+
+                update_lives()
 
         if house.x>0:
             house.x -=2
@@ -150,9 +156,34 @@ def update():
             game_over = True
             update_high_scores()
 
-        # for bird in birds:
-        #     if balloon.collidepoint(bird.x,bird.y) or balloon.collidepoint(house.x,house.y) or balloon.collidepoint(tree.x,tree.y):
-        #         game_over = True
-        #         update_high_scores()
+def update_lives():
+    global lives
+
+
+    if lives_counter ==4:
+        lives.image = 'heart4'
+        lives.pos = 930, 70
+        lives._surf = pygame.transform.scale(lives._surf, (200, 30))
+        lives._update_pos()
+
+    if lives_counter ==3:
+        lives.image = 'heart3'
+        lives.pos = 930, 70
+        lives._surf = pygame.transform.scale(lives._surf, (200, 30))
+        lives._update_pos()
+    if lives_counter == 2:
+        lives.image = 'heart2'
+        lives.pos = 930, 70
+        lives._surf = pygame.transform.scale(lives._surf, (200, 30))
+        lives._update_pos()
+    if lives_counter == 1:
+        lives.image = 'heart1'
+        lives.pos = 930, 70
+        lives._surf = pygame.transform.scale(lives._surf, (200, 30))
+        lives._update_pos()
+    if lives_counter == 0:
+        game_over = True
+        update_high_scores()
+
 
 pgzrun.go()
