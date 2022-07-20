@@ -6,6 +6,13 @@ When the game starts a hot air balloon appears in the middle of the screen. You 
 to make the balloon rise or fall. THe challenge is to keep the balloon in the air without hitting any birds, houses, or
 trees. Game is over if you hit one. 
 
+HACKS AND TWEAKS 
+
+file handling - write now you write to the high-scores.txt every time the program exits. Add efficiency to the code 
+by write to the file only if the high scores have changed hint use a boolean
+
+use a list of bird actors 
+
 """
 
 #CONSTANTS
@@ -19,12 +26,19 @@ game_over = False
 score = 0
 num_of_updates = 0
 scores = []
+update_high_scores = False
+birds = []
 
 balloon = Actor("balloon")
 balloon.pos = 400,300
 
-bird = Actor('bird-up')
-bird.pos = random.randint(0,800), random.randint(10,200) #bird appears
+
+for index in range(4):
+    birds.append(Actor('bird-up'))
+    birds[index].pos = random.randint(0,800), random.randint(10,200) #bird appears
+
+
+
 
 house = Actor('house')
 house.pos= 390, 460
@@ -37,7 +51,7 @@ def draw():
 
     if not game_over:
         balloon.draw()
-        bird.draw()
+        for bird in birds: bird.draw()
         tree.draw()
         house.draw()
         screen.draw.text("Score: {}".format(score),(700,500),color="black")
@@ -45,7 +59,7 @@ def draw():
         display_high_scores()
 
 def update_high_scores():
-    global score, scores
+    global score, scores, update_high_scores
     filename = r'C:\Users\Tatiana\PycharmProjects\balloon_Fight\venv\high-scores.txt'
     scores = []
     with open(filename, 'r') as file:
@@ -56,12 +70,14 @@ def update_high_scores():
         if score > int(num):
             scores.append(str(score)+" ")
             score = int(num)
+            update_high_scores = True
         else:
             scores.append(str(num)+ " ")
-
-    with open(filename, "w") as file:
-        for num in scores:
-            file.write(num)
+    if update_high_scores:
+        with open(filename, "w") as file:
+            for num in scores:
+                file.write(num)
+        update_high_scores = False
     file.close()
     print("High Scores: {}".format(scores))
 
@@ -85,32 +101,42 @@ def on_mouse_up(): #when the player lets go of the mouse
     global up
     up = False
 
-def flap():
+def flap(bird):
     global bird_up
+
     if bird_up:
-        bird.image="bird-down"
+        bird.image = 'bird-down'
         bird_up = False
     else:
-        bird.image = "bird-up"
-        bird_up=True
+        bird.image = 'bird-up'
+        bird_up = True
+
+
+
 def update():
-    global game_over, score, num_of_updates
+    global game_over, score, num_of_updates, birds
 
     if not game_over: #if the game is not over yet
         if not up: #if up is false
             balloon.y+=1 #move the balloon down by 1
-        if bird.x>0:
-            bird.x-=4
-            if num_of_updates == 9:
-                flap()
-                num_of_updates = 0
+
+        for bird in birds:
+            if bird.x>0:
+                bird.x-=4
+                if num_of_updates == 5:
+                    flap(bird)
+                    num_of_updates = 0
+                else:
+                    num_of_updates +=1
             else:
-                num_of_updates +=1
-        else:
-            bird.x=WIDTH
-            bird.y=random.randint(0,HEIGHT/1.5)
-            score+=1 #this means the balloon avoided getting hit by the bird which adds a point
-            num_of_updates = 0
+                bird.x=random.randint(WIDTH, 1600)
+                bird.y=random.randint(0,HEIGHT)
+                score+=1 #this means the balloon avoided getting hit by the bird which adds a point
+                num_of_updates = 0
+            if balloon.collidepoint(bird.x,bird.y) or balloon.collidepoint(house.x,house.y) or balloon.collidepoint(tree.x,tree.y):
+                game_over = True
+                update_high_scores()
+
         if house.x>0:
             house.x -=2
         else:
@@ -123,8 +149,10 @@ def update():
         if balloon.top < 0 or balloon.bottom > HEIGHT-40:
             game_over = True
             update_high_scores()
-        if balloon.collidepoint(bird.x,bird.y) or balloon.collidepoint(house.x,house.y) or balloon.collidepoint(tree.x,tree.y):
-            game_over = True
-            update_high_scores()
+
+        # for bird in birds:
+        #     if balloon.collidepoint(bird.x,bird.y) or balloon.collidepoint(house.x,house.y) or balloon.collidepoint(tree.x,tree.y):
+        #         game_over = True
+        #         update_high_scores()
 
 pgzrun.go()
