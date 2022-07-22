@@ -31,7 +31,7 @@ scores = []
 update_highscores = False
 birds = []
 lives_counter = 5
-
+previous_actor = Actor('tree')
 
 balloon = Actor("balloon")
 balloon.pos = 400,300
@@ -127,7 +127,7 @@ def update():
         for bird in birds:
             if bird.x>0:
                 bird.x-=4
-                if num_of_updates == 5:
+                if num_of_updates == 9:
                     flap(bird)
                     num_of_updates = 0
                 else:
@@ -138,10 +138,17 @@ def update():
                 score+=1 #this means the balloon avoided getting hit by the bird which adds a point
                 num_of_updates = 0
 
-            if balloon.collidepoint(bird.x,bird.y) or balloon.collidepoint(house.x,house.y) or balloon.collidepoint(tree.x,tree.y):
-                lives_counter-=1
+            if balloon.collidepoint(bird.x,bird.y):
+                actor = bird
+                update_lives(bird)
 
-                update_lives()
+        if balloon.collidepoint(house.x,house.y):
+            actor = house
+            update_lives(actor)
+        if balloon.collidepoint(tree.x,tree.y):
+            actor=tree
+            update_lives(tree)
+
 
         if house.x>0:
             house.x -=2
@@ -156,34 +163,37 @@ def update():
             game_over = True
             update_high_scores()
 
-def update_lives():
-    global lives
+def update_lives(actor):
+    global lives, previous_actor, lives_counter, game_over
 
+    if actor!=previous_actor:
+        lives_counter-=1
+        if lives_counter ==4:
+            lives.image = 'heart4'
+            lives.pos = 930, 70
+            lives._surf = pygame.transform.scale(lives._surf, (200, 30))
+            lives._update_pos()
 
-    if lives_counter ==4:
-        lives.image = 'heart4'
-        lives.pos = 930, 70
-        lives._surf = pygame.transform.scale(lives._surf, (200, 30))
-        lives._update_pos()
-
-    if lives_counter ==3:
-        lives.image = 'heart3'
-        lives.pos = 930, 70
-        lives._surf = pygame.transform.scale(lives._surf, (200, 30))
-        lives._update_pos()
-    if lives_counter == 2:
-        lives.image = 'heart2'
-        lives.pos = 930, 70
-        lives._surf = pygame.transform.scale(lives._surf, (200, 30))
-        lives._update_pos()
-    if lives_counter == 1:
-        lives.image = 'heart1'
-        lives.pos = 930, 70
-        lives._surf = pygame.transform.scale(lives._surf, (200, 30))
-        lives._update_pos()
-    if lives_counter == 0:
-        game_over = True
-        update_high_scores()
+        if lives_counter ==3:
+            lives.image = 'heart3'
+            lives.pos = 930, 70
+            lives._surf = pygame.transform.scale(lives._surf, (200, 30))
+            lives._update_pos()
+        if lives_counter == 2:
+            lives.image = 'heart2'
+            lives.pos = 930, 70
+            lives._surf = pygame.transform.scale(lives._surf, (200, 30))
+            lives._update_pos()
+        if lives_counter == 1:
+            lives.image = 'heart1'
+            lives.pos = 930, 70
+            lives._surf = pygame.transform.scale(lives._surf, (200, 30))
+            lives._update_pos()
+        if lives_counter == 0:
+            game_over = True
+            update_high_scores()
+        previous_actor = actor
+        print(lives_counter)
 
 
 pgzrun.go()
